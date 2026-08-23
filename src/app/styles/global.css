@@ -1,0 +1,225 @@
+:root {
+  font-family: 'Yu Gothic', 'Hiragino Kaku Gothic ProN', system-ui, sans-serif;
+  color: #31252d;
+  background: #fffafc;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  min-width: 320px;
+  background: #f6eef2;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+button,
+a {
+  font: inherit;
+}
+button {
+  min-height: 44px;
+}
+.app-shell {
+  min-height: 100vh;
+  max-width: 760px;
+  margin: 0 auto;
+  background: #fffafc;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+.app-header {
+  height: 58px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  border-bottom: 1px solid #eadde3;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(255, 250, 252, 0.96);
+}
+.brand-mark {
+  color: #9b567d;
+  font-size: 1.5rem;
+}
+.page-container {
+  padding: 24px 18px;
+}
+.page h1,
+.auth-card h1 {
+  margin: 2px 0 22px;
+  font-size: clamp(1.7rem, 8vw, 2.25rem);
+}
+.eyebrow {
+  color: #8a4b6f;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin: 0;
+}
+.status-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.status-card,
+.placeholder-card {
+  border: 1px solid #eadde3;
+  border-radius: 18px;
+  background: white;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(93, 51, 75, 0.06);
+}
+.status-card.accent {
+  border-left: 5px solid #a75d85;
+}
+.status-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 10px;
+}
+.status-card span {
+  color: #7b4668;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.status-card small {
+  grid-column: 1 / -1;
+  color: #74656d;
+}
+.placeholder-card {
+  text-align: center;
+  color: #66535d;
+  padding-block: 42px;
+}
+.placeholder-card small {
+  display: block;
+  margin-top: 12px;
+}
+.placeholder-icon,
+.auth-logo {
+  display: block;
+  color: #b86e96;
+  font-size: 3rem;
+}
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  background: #7b4668;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  padding: 12px 18px;
+}
+.primary-button:disabled {
+  background: #c4b3bc;
+}
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100%, 760px);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid #e4d5dd;
+  padding: 7px 4px calc(7px + env(safe-area-inset-bottom));
+  z-index: 10;
+}
+.nav-link {
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  color: #74656d;
+  text-decoration: none;
+  font-size: 0.72rem;
+  border-radius: 10px;
+}
+.nav-link span:first-child {
+  font-size: 1.2rem;
+}
+.nav-link.active {
+  color: #7b4668;
+  background: #f7edf2;
+  font-weight: 700;
+}
+.offline-banner {
+  background: #473743;
+  color: white;
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 0.86rem;
+}
+.update-prompt {
+  position: fixed;
+  left: 50%;
+  bottom: 88px;
+  transform: translateX(-50%);
+  width: min(calc(100% - 28px), 520px);
+  background: #31252d;
+  color: white;
+  padding: 14px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 20;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+.update-prompt button {
+  border: 0;
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: #31252d;
+  font-weight: 700;
+}
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: linear-gradient(160deg, #fffafc, #f0dce6);
+}
+.auth-card {
+  width: min(100%, 420px);
+  background: white;
+  padding: 34px 24px;
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(93, 51, 75, 0.13);
+  text-align: center;
+}
+.auth-card .primary-button {
+  margin-top: 20px;
+}
+.notice {
+  background: #f7edf2;
+  color: #74425f;
+  padding: 12px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+@media (min-width: 600px) {
+  .page-container {
+    padding: 36px;
+  }
+  .status-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
