@@ -17,14 +17,14 @@ test('real Supabase signup, profile creation, session restore, logout and login'
   await page.getByLabel('メールアドレス').fill(email);
   await page.getByLabel('パスワード').fill(password);
   await page.getByRole('button', { name: '登録する' }).click();
-  await expect(page).toHaveURL(/\/home$/, { timeout: 15_000 });
+  await expect(page).toHaveURL(/\/setup$/, { timeout: 15_000 });
 
   await page.goto('/settings');
   await expect(page.getByRole('status')).toHaveText('プロフィール準備完了');
 
-  await page.goto('/home');
+  await page.goto('/setup');
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'ホーム' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'ふたりのスペースを始める' })).toBeVisible();
   await page.goto('/settings');
   await page.getByRole('button', { name: 'ログアウト' }).click();
   await expect(page).toHaveURL(/\/login$/);
@@ -34,7 +34,7 @@ test('real Supabase signup, profile creation, session restore, logout and login'
   await page.getByLabel('メールアドレス').fill(email);
   await page.getByLabel('パスワード').fill(password);
   await page.getByRole('button', { name: 'ログイン' }).click();
-  await expect(page).toHaveURL(/\/home$/);
+  await expect(page).toHaveURL(/\/setup$/);
 });
 
 test('real Supabase password reset request', async ({ page }, testInfo) => {

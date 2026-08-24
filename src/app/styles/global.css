@@ -247,6 +247,80 @@ button {
   border-radius: 10px;
   padding: 10px;
 }
+.setup-page {
+  min-height: 100vh;
+  padding: 24px 18px;
+  background: #fffafc;
+}
+.setup-card {
+  width: min(100%, 680px);
+  margin: 24px auto;
+}
+.setup-card h1 {
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
+}
+.setup-actions {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+.setup-actions > section,
+.invitation-result {
+  border: 1px solid #eadde3;
+  border-radius: 18px;
+  background: white;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(93, 51, 75, 0.06);
+}
+.pairing-action {
+  display: grid;
+  gap: 10px;
+}
+.pairing-action label {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+}
+.pairing-action input {
+  min-height: 46px;
+  border: 1px solid #cfbdc7;
+  border-radius: 11px;
+  padding: 10px 12px;
+  width: 100%;
+}
+.invitation-result {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+.invitation-result code {
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+  background: #f7edf2;
+  padding: 12px;
+  border-radius: 10px;
+  user-select: all;
+}
+.secondary-button,
+.text-button {
+  min-height: 44px;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+}
+.secondary-button {
+  border: 1px solid #7b4668;
+  background: white;
+  color: #7b4668;
+}
+.text-button {
+  display: block;
+  margin: 16px auto 0;
+  border: 0;
+  background: transparent;
+  color: #74425f;
+  text-decoration: underline;
+}
 .notice {
   background: #f7edf2;
   color: #74425f;
@@ -259,6 +333,9 @@ button {
     padding: 36px;
   }
   .status-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .setup-actions {
     grid-template-columns: 1fr 1fr;
   }
 }
