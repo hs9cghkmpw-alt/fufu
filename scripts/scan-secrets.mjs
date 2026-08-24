@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
   encoding: 'utf8'
@@ -15,7 +15,7 @@ const patterns = [
 ];
 const findings = [];
 for (const file of files.filter(
-  (name) => textFile.test(name) && name !== 'scripts/scan-secrets.mjs'
+  (name) => textFile.test(name) && name !== 'scripts/scan-secrets.mjs' && existsSync(name)
 )) {
   const content = readFileSync(file, 'utf8');
   for (const [name, regex] of patterns) if (regex.test(content)) findings.push(`${file}: ${name}`);
