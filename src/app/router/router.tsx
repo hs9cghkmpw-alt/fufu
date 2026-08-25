@@ -12,6 +12,8 @@ import { HomePage } from '../../features/home/pages/HomePage';
 import { SetupPage } from '../../features/pairing/pages/SetupPage';
 import { PairingRequiredRoute } from '../../features/pairing/components/PairingRequiredRoute';
 import { RequestsPage } from '../../features/requests/pages/RequestsPage';
+import { NewRequestPage } from '../../features/requests/pages/NewRequestPage';
+import { RequestDetailPage } from '../../features/requests/pages/RequestDetailPage';
 import { SettingsPage } from '../../features/settings/pages/SettingsPage';
 
 export const router = createBrowserRouter([
@@ -38,6 +40,8 @@ export const router = createBrowserRouter([
             children: [
               { path: '/home', element: <HomePage /> },
               { path: '/requests', element: <RequestsPage /> },
+              { path: '/requests/new', element: <NewRequestPage /> },
+              { path: '/requests/:id', element: <RequestDetailPage /> },
               { path: '/calendar', element: <CalendarPage /> },
               { path: '/history', element: <HistoryPage /> }
             ]

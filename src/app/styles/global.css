@@ -19,7 +19,9 @@ body {
 }
 button,
 a,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 button {
@@ -328,6 +330,104 @@ button {
   border-radius: 12px;
   margin-top: 20px;
 }
+.page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.page-title-row h1 {
+  margin-bottom: 0;
+}
+.primary-button.compact {
+  width: auto;
+}
+.page-intro {
+  color: #66535d;
+  margin: -10px 0 24px;
+}
+.request-section {
+  margin: 28px 0;
+}
+.request-section h2 {
+  font-size: 1.15rem;
+}
+.request-card {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+  border: 1px solid #eadde3;
+  border-radius: 16px;
+  background: white;
+  color: inherit;
+  padding: 16px;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(93, 51, 75, 0.05);
+}
+.request-card h3,
+.request-card p {
+  margin: 0;
+}
+.request-card p,
+.empty-state {
+  color: #74656d;
+}
+.request-status {
+  width: fit-content;
+  border-radius: 999px;
+  background: #f7edf2;
+  color: #74425f;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.request-form {
+  display: grid;
+  gap: 18px;
+}
+.request-form label {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+}
+.request-form input,
+.request-form select,
+.request-form textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #cfbdc7;
+  border-radius: 11px;
+  padding: 10px 12px;
+  color: inherit;
+  background: white;
+}
+.request-form textarea {
+  resize: vertical;
+}
+.form-row {
+  display: grid;
+  gap: 16px;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: minmax(90px, auto) 1fr;
+  gap: 0;
+  margin-top: 24px;
+  border: 1px solid #eadde3;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.detail-grid dt,
+.detail-grid dd {
+  margin: 0;
+  padding: 13px;
+  border-bottom: 1px solid #eadde3;
+}
+.detail-grid dt {
+  background: #f7edf2;
+  font-weight: 700;
+}
 @media (min-width: 600px) {
   .page-container {
     padding: 36px;
@@ -336,6 +436,9 @@ button {
     grid-template-columns: 1fr 1fr;
   }
   .setup-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+  .form-row {
     grid-template-columns: 1fr 1fr;
   }
 }
