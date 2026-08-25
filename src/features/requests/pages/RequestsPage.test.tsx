@@ -15,6 +15,7 @@ const request: RequestSummary = {
   category: 'purchase',
   status: 'pending_response',
   currentProposalVersion: 1,
+  discussionAt: null,
   createdAt: '2026-08-25T00:00:00Z',
   proposal: {
     id: 'proposal-1',

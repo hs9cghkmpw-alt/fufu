@@ -55,7 +55,7 @@ export async function listRequests(): Promise<RequestSummary[]> {
   const { data: requests, error } = await supabase
     .from('requests')
     .select(
-      'id,requester_user_id,current_actor_user_id,category,status,current_proposal_version,created_at'
+      'id,requester_user_id,current_actor_user_id,category,status,current_proposal_version,discussion_at,created_at'
     )
     .order('created_at', { ascending: false });
   if (error) throw new Error('申請一覧を取得できませんでした。');
@@ -84,6 +84,7 @@ export async function listRequests(): Promise<RequestSummary[]> {
             createdAt: request.created_at,
             requesterUserId: request.requester_user_id,
             currentActorUserId: request.current_actor_user_id,
+            discussionAt: request.discussion_at,
             proposal: mapProposal(proposal)
           }
         ]

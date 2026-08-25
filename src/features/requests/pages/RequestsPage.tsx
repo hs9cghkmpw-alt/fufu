@@ -20,8 +20,13 @@ export function RequestsPage() {
 
   const needsAction = requests.filter((request) => request.currentActorUserId === user?.id);
   const waiting = requests.filter(
-    (request) => request.requesterUserId === user?.id && request.currentActorUserId !== user.id
+    (request) =>
+      request.requesterUserId === user?.id &&
+      request.currentActorUserId !== user.id &&
+      ['pending_response', 'negotiating'].includes(request.status)
   );
+  const approved = requests.filter((request) => request.status === 'approved');
+  const discussions = requests.filter((request) => request.status === 'discussion_scheduled');
   return (
     <div className="page requests-page">
       <p className="eyebrow">Formal requests</p>
@@ -40,6 +45,16 @@ export function RequestsPage() {
         title="相手の回答待ち"
         requests={waiting}
         emptyText="現在、回答待ちの申請はありません。"
+      />
+      <RequestSection
+        title="話し合い予定"
+        requests={discussions}
+        emptyText="話し合い予定はありません。"
+      />
+      <RequestSection
+        title="最近の合意"
+        requests={approved}
+        emptyText="合意済みの申請はまだありません。"
       />
       <RequestSection
         title="最近の申請"

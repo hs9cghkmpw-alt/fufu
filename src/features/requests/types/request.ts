@@ -33,6 +33,7 @@ export interface RequestSummary {
   category: RequestCategory;
   status: string;
   currentProposalVersion: number;
+  discussionAt: string | null;
   createdAt: string;
   proposal: RequestProposal;
 }

@@ -15,3 +15,13 @@ export const amountTypeLabels: Record<AmountType, string> = {
   one_time: '単発',
   monthly: '月額'
 };
+
+export const requestStatusLabels: Record<string, string> = {
+  pending_response: '回答待ち',
+  approved: '合意済み',
+  rejected: '却下',
+  discussion_scheduled: '話し合い予定',
+  negotiating: '条件調整中',
+  withdrawn: '取下げ',
+  cancelled: '取消済み'
+};

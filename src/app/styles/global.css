@@ -428,6 +428,31 @@ button {
   background: #f7edf2;
   font-weight: 700;
 }
+.response-actions {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid #eadde3;
+  border-radius: 16px;
+  background: white;
+}
+.response-button-grid,
+.response-panel {
+  display: grid;
+  gap: 12px;
+}
+.response-panel label {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+}
+.response-panel input,
+.response-panel textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #cfbdc7;
+  border-radius: 11px;
+  padding: 10px 12px;
+}
 @media (min-width: 600px) {
   .page-container {
     padding: 36px;

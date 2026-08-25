@@ -1,13 +1,16 @@
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
+import { ResponseActions } from '../components/ResponseActions';
 import { useRequestDetail } from '../hooks/useRequestDetail';
-import { categoryLabels } from '../lib/requestConstants';
+import { categoryLabels, requestStatusLabels } from '../lib/requestConstants';
+import { useState } from 'react';
 import { formatAmount, formatDateTime } from '../lib/requestFormatting';
 
 export function RequestDetailPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const { request, isLoading, error } = useRequestDetail(id);
+  const { request, isLoading, error, refresh } = useRequestDetail(id);
+  const [notice, setNotice] = useState('');
   if (isLoading) return <p>申請を読み込んでいます…</p>;
   if (error || !request) return <p className="form-error">{error || '申請が見つかりません。'}</p>;
   const proposal = request.proposal;
@@ -15,7 +18,14 @@ export function RequestDetailPage() {
     <article className="page request-detail">
       <p className="eyebrow">Request detail</p>
       <h1>{proposal.title}</h1>
-      <span className="request-status">回答待ち</span>
+      <span className="request-status">
+        {requestStatusLabels[request.status] ?? request.status}
+      </span>
+      {notice && (
+        <p className="notice" role="status">
+          {notice}
+        </p>
+      )}
       <dl className="detail-grid">
         <dt>カテゴリ</dt>
         <dd>{categoryLabels[request.category]}</dd>
@@ -35,7 +45,23 @@ export function RequestDetailPage() {
         <dd>v{proposal.versionNo}</dd>
         <dt>作成日時</dt>
         <dd>{formatDateTime(request.createdAt)}</dd>
+        {request.status === 'discussion_scheduled' && (
+          <>
+            <dt>話し合う日時</dt>
+            <dd>{formatDateTime(request.discussionAt)}</dd>
+          </>
+        )}
       </dl>
+      {request.currentActorUserId === user?.id && (
+        <ResponseActions
+          requestId={request.id}
+          expectedVersion={request.currentProposalVersion}
+          onCompleted={async (message) => {
+            await refresh();
+            setNotice(message);
+          }}
+        />
+      )}
     </article>
   );
 }

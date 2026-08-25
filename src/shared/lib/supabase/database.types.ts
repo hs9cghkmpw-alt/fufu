@@ -330,6 +330,7 @@ export type Database = {
           created_at: string;
           current_actor_user_id: string | null;
           current_proposal_version: number;
+          discussion_at: string | null;
           id: string;
           request_kind: string;
           requester_user_id: string;
@@ -342,6 +343,7 @@ export type Database = {
           created_at?: string;
           current_actor_user_id?: string | null;
           current_proposal_version?: number;
+          discussion_at?: string | null;
           id?: string;
           request_kind?: string;
           requester_user_id: string;
@@ -354,6 +356,7 @@ export type Database = {
           created_at?: string;
           current_actor_user_id?: string | null;
           current_proposal_version?: number;
+          discussion_at?: string | null;
           id?: string;
           request_kind?: string;
           requester_user_id?: string;
@@ -391,11 +394,73 @@ export type Database = {
           }
         ];
       };
+      responses: {
+        Row: {
+          couple_id: string;
+          created_at: string;
+          discussion_at: string | null;
+          id: string;
+          proposal_version_id: string;
+          reason: string | null;
+          request_id: string;
+          responder_user_id: string;
+          response_type: string;
+        };
+        Insert: {
+          couple_id: string;
+          created_at?: string;
+          discussion_at?: string | null;
+          id?: string;
+          proposal_version_id: string;
+          reason?: string | null;
+          request_id: string;
+          responder_user_id: string;
+          response_type: string;
+        };
+        Update: {
+          couple_id?: string;
+          created_at?: string;
+          discussion_at?: string | null;
+          id?: string;
+          proposal_version_id?: string;
+          reason?: string | null;
+          request_id?: string;
+          responder_user_id?: string;
+          response_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'responses_proposal_request_couple';
+            columns: ['proposal_version_id', 'request_id', 'couple_id'];
+            isOneToOne: false;
+            referencedRelation: 'proposal_versions';
+            referencedColumns: ['id', 'request_id', 'couple_id'];
+          },
+          {
+            foreignKeyName: 'responses_request_couple';
+            columns: ['request_id', 'couple_id'];
+            isOneToOne: false;
+            referencedRelation: 'requests';
+            referencedColumns: ['id', 'couple_id'];
+          },
+          {
+            foreignKeyName: 'responses_responder_membership';
+            columns: ['couple_id', 'responder_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'couple_members';
+            referencedColumns: ['couple_id', 'user_id'];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      approve_request: {
+        Args: { expected_version: number; target_request_id: string };
+        Returns: string;
+      };
       create_couple: { Args: never; Returns: string };
       create_couple_invitation: {
         Args: { target_couple_id: string; valid_for?: string };
@@ -422,9 +487,47 @@ export type Database = {
         Returns: boolean;
       };
       join_couple: { Args: { invite_code: string }; Returns: string };
+      lock_request_for_response: {
+        Args: { expected_version: number; target_request_id: string };
+        Returns: {
+          category: string;
+          couple_id: string;
+          created_at: string;
+          current_actor_user_id: string | null;
+          current_proposal_version: number;
+          discussion_at: string | null;
+          id: string;
+          request_kind: string;
+          requester_user_id: string;
+          status: string;
+          updated_at: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'requests';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      reject_request: {
+        Args: {
+          expected_version: number;
+          rejection_reason: string;
+          target_request_id: string;
+        };
+        Returns: string;
+      };
       revoke_couple_invitation: {
         Args: { target_invitation_id: string };
         Returns: undefined;
+      };
+      schedule_discussion: {
+        Args: {
+          expected_version: number;
+          scheduled_for: string;
+          target_request_id: string;
+        };
+        Returns: string;
       };
     };
     Enums: {

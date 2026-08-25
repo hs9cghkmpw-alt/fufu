@@ -64,14 +64,14 @@ async function createAndInvite(page: Page) {
   return (await page.locator('.invitation-result code').innerText()).trim();
 }
 
-test('A creates request v1, B sees action, and another couple cannot read it', async ({
+test('A creates requests, B responds, and another couple cannot read them', async ({
   browser
 }, testInfo) => {
   test.skip(
     testInfo.project.name !== 'chromium',
     'Run remote mutations once to respect rate limits'
   );
-  test.setTimeout(300_000);
+  test.setTimeout(600_000);
 
   const a = await signup(browser, 'a');
   const inviteCode = await createAndInvite(a.page);
@@ -181,6 +181,114 @@ test('A creates request v1, B sees action, and another couple cannot read it', a
   await expect(b.page.getByRole('heading', { name: 'あなたの対応が必要' })).toBeVisible();
   await b.page.getByText('新しい掃除機の提案').first().click();
   await expect(b.page.getByText('二人で使う掃除機について相談したい')).toBeVisible();
+  expect(
+    (
+      await rest(a.page, 'rpc/approve_request', 'POST', {
+        target_request_id: requestId,
+        expected_version: 1
+      })
+    ).status
+  ).toBe(400);
+  expect(
+    (
+      await rest(b.page, 'rpc/approve_request', 'POST', {
+        target_request_id: requestId,
+        expected_version: 99
+      })
+    ).status
+  ).toBe(400);
+  await b.page.getByRole('button', { name: '承認する' }).click();
+  await b.page.getByRole('button', { name: '内容を確認して承認する' }).click();
+  await expect(b.page.getByText('申請を承認しました。')).toBeVisible();
+  await expect(b.page.getByText('合意済み').first()).toBeVisible();
+  await a.page.goto(detailUrl);
+  await expect(a.page.getByText('合意済み').first()).toBeVisible();
+  await expect(a.page.getByRole('button', { name: '承認する' })).toHaveCount(0);
+  const approvedResponse = await rest(
+    a.page,
+    `responses?select=id,response_type,proposal_version_id,responder_user_id&request_id=eq.${requestId}`
+  );
+  expect(approvedResponse.data).toEqual([
+    expect.objectContaining({
+      response_type: 'approved',
+      proposal_version_id: proposalId,
+      responder_user_id: b.userId
+    })
+  ]);
+  const responseId = (approvedResponse.data as { id: string }[])[0]!.id;
+  expect(
+    (await rest(b.page, `responses?id=eq.${responseId}`, 'PATCH', { reason: '改ざん' })).data
+  ).toEqual([]);
+  expect((await rest(b.page, `responses?id=eq.${responseId}`, 'DELETE')).data).toEqual([]);
+  expect((await rest(a.page, `audit_logs?select=action&request_id=eq.${requestId}`)).data).toEqual(
+    expect.arrayContaining([expect.objectContaining({ action: 'request_approved' })])
+  );
+
+  await a.page.goto('/requests/new');
+  await a.page.getByLabel('タイトル').fill('却下シナリオ');
+  await a.page.getByRole('button', { name: '相手に申請を送る' }).click();
+  await expect(a.page).toHaveURL(/\/requests\/[0-9a-f-]+$/);
+  const rejectUrl = new URL(a.page.url()).pathname;
+  const rejectId = rejectUrl.split('/').at(-1)!;
+  expect(
+    (
+      await rest(
+        a.page,
+        `requests?select=requester_user_id,current_actor_user_id&id=eq.${rejectId}`
+      )
+    ).data
+  ).toEqual([{ requester_user_id: a.userId, current_actor_user_id: b.userId }]);
+  expect(
+    (
+      await rest(b.page, 'rpc/reject_request', 'POST', {
+        target_request_id: rejectId,
+        expected_version: 1,
+        rejection_reason: '今回は見送ります'
+      })
+    ).status
+  ).toBe(200);
+  await b.page.goto(rejectUrl);
+  await expect(b.page.getByText('却下').first()).toBeVisible();
+
+  await a.page.goto('/requests/new');
+  await a.page.getByLabel('タイトル').fill('話し合いシナリオ');
+  await a.page.getByRole('button', { name: '相手に申請を送る' }).click();
+  await expect(a.page).toHaveURL(/\/requests\/[0-9a-f-]+$/);
+  const discussionUrl = new URL(a.page.url()).pathname;
+  const discussionId = discussionUrl.split('/').at(-1)!;
+  expect(
+    (
+      await rest(b.page, 'rpc/schedule_discussion', 'POST', {
+        target_request_id: discussionId,
+        expected_version: 1,
+        scheduled_for: '2026-08-26T20:00:00+09:00'
+      })
+    ).status
+  ).toBe(200);
+  await b.page.goto(discussionUrl);
+  await expect(b.page.getByText('話し合い予定').first()).toBeVisible();
+  await expect(b.page.getByText(/2026\/08\/26 20:00/)).toBeVisible();
+
+  await a.page.goto('/requests/new');
+  await a.page.getByLabel('タイトル').fill('同時回答シナリオ');
+  await a.page.getByRole('button', { name: '相手に申請を送る' }).click();
+  await expect(a.page).toHaveURL(/\/requests\/[0-9a-f-]+$/);
+  const concurrentId = new URL(a.page.url()).pathname.split('/').at(-1)!;
+  const concurrent = await Promise.all([
+    rest(b.page, 'rpc/approve_request', 'POST', {
+      target_request_id: concurrentId,
+      expected_version: 1
+    }),
+    rest(b.page, 'rpc/reject_request', 'POST', {
+      target_request_id: concurrentId,
+      expected_version: 1,
+      rejection_reason: '同時回答テスト'
+    })
+  ]);
+  expect(concurrent.map((result) => result.status).sort()).toEqual([200, 400]);
+  expect(
+    (await rest(a.page, `responses?select=id&request_id=eq.${concurrentId}`)).data
+  ).toHaveLength(1);
 
   const c = await signup(browser, 'c');
   await createAndInvite(c.page);
@@ -199,6 +307,15 @@ test('A creates request v1, B sees action, and another couple cannot read it', a
     (await rest(c.page, `proposal_versions?select=id&request_id=eq.${requestId}`)).data
   ).toEqual([]);
   expect((await rest(c.page, `audit_logs?select=id&request_id=eq.${requestId}`)).data).toEqual([]);
+  expect((await rest(c.page, `responses?select=id&request_id=eq.${requestId}`)).data).toEqual([]);
+  expect(
+    (
+      await rest(c.page, 'rpc/approve_request', 'POST', {
+        target_request_id: requestId,
+        expected_version: 1
+      })
+    ).status
+  ).toBe(400);
 
   await a.context.close();
   await b.context.close();
