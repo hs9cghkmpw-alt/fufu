@@ -8,6 +8,7 @@ import { useRequestDetail } from '../hooks/useRequestDetail';
 import { categoryLabels, requestStatusLabels } from '../lib/requestConstants';
 import { useState } from 'react';
 import { formatAmount, formatDateTime } from '../lib/requestFormatting';
+import { RequestAgreementPanel } from '../../agreements/components/RequestAgreementPanel';
 
 export function RequestDetailPage() {
   const { id } = useParams();
@@ -90,6 +91,7 @@ export function RequestDetailPage() {
             }}
           />
         )}
+      {request.status === 'approved' && <RequestAgreementPanel requestId={request.id} />}
       <ProposalHistory
         proposals={request.proposals}
         currentVersion={request.currentProposalVersion}

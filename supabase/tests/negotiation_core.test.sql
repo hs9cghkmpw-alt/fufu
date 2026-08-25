@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(35);
+select plan(37);
 
 insert into auth.users (id, email) values
   ('30000000-0000-0000-0000-0000000000a1', 'negotiation-a@example.test'),
@@ -40,6 +40,8 @@ select lives_ok(format('select public.approve_request(%L, 3)', :'negotiation_id'
 select is((select status from public.requests where id = :'negotiation_id'), 'approved', 'latest approval sets approved');
 select is((select count(*) from public.proposal_versions where request_id = :'negotiation_id'), 3::bigint, 'approval does not create v4');
 select is((select pv.version_no from public.responses response join public.proposal_versions pv on pv.id = response.proposal_version_id where response.request_id = :'negotiation_id'), 3, 'approved response points to v3');
+select is((select pv.version_no from public.agreements agreement join public.proposal_versions pv on pv.id = agreement.source_proposal_version_id where agreement.source_request_id = :'negotiation_id'), 3, 'agreement fixes negotiated v3');
+select is((select count(*) from public.agreements where source_request_id = :'negotiation_id'), 1::bigint, 'negotiated request has one agreement');
 select is((select count(*) from public.audit_logs where request_id = :'negotiation_id' and action in ('proposal_countered', 'proposal_reproposed', 'request_approved')), 3::bigint, 'negotiation and approval audits exist');
 select throws_ok(format($$select public.counter_proposal(%L, 3, 'late', 'other', null, null, null, null, null, 'late')$$, :'negotiation_id'), 'P0001', 'not_current_actor', 'approved request cannot be changed');
 

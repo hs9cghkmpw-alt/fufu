@@ -15,6 +15,8 @@ import { RequestsPage } from '../../features/requests/pages/RequestsPage';
 import { NewRequestPage } from '../../features/requests/pages/NewRequestPage';
 import { RequestDetailPage } from '../../features/requests/pages/RequestDetailPage';
 import { SettingsPage } from '../../features/settings/pages/SettingsPage';
+import { AgreementsPage } from '../../features/agreements/pages/AgreementsPage';
+import { AgreementDetailPage } from '../../features/agreements/pages/AgreementDetailPage';
 
 export const router = createBrowserRouter([
   { path: '/', element: <Navigate to="/home" replace /> },
@@ -42,6 +44,8 @@ export const router = createBrowserRouter([
               { path: '/requests', element: <RequestsPage /> },
               { path: '/requests/new', element: <NewRequestPage /> },
               { path: '/requests/:id', element: <RequestDetailPage /> },
+              { path: '/agreements', element: <AgreementsPage /> },
+              { path: '/agreements/:id', element: <AgreementDetailPage /> },
               { path: '/calendar', element: <CalendarPage /> },
               { path: '/history', element: <HistoryPage /> }
             ]

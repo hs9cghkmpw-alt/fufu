@@ -33,6 +33,100 @@ export type Database = {
   };
   public: {
     Tables: {
+      agreements: {
+        Row: {
+          approved_response_id: string;
+          cancelled_at: string | null;
+          completed_at: string | null;
+          completed_by_user_id: string | null;
+          couple_id: string;
+          created_at: string;
+          due_at: string | null;
+          execution_status: string;
+          id: string;
+          lifecycle_status: string;
+          scheduled_at: string | null;
+          source_proposal_version_id: string;
+          source_request_id: string;
+          superseded_by: string | null;
+        };
+        Insert: {
+          approved_response_id: string;
+          cancelled_at?: string | null;
+          completed_at?: string | null;
+          completed_by_user_id?: string | null;
+          couple_id: string;
+          created_at?: string;
+          due_at?: string | null;
+          execution_status: string;
+          id?: string;
+          lifecycle_status?: string;
+          scheduled_at?: string | null;
+          source_proposal_version_id: string;
+          source_request_id: string;
+          superseded_by?: string | null;
+        };
+        Update: {
+          approved_response_id?: string;
+          cancelled_at?: string | null;
+          completed_at?: string | null;
+          completed_by_user_id?: string | null;
+          couple_id?: string;
+          created_at?: string;
+          due_at?: string | null;
+          execution_status?: string;
+          id?: string;
+          lifecycle_status?: string;
+          scheduled_at?: string | null;
+          source_proposal_version_id?: string;
+          source_request_id?: string;
+          superseded_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'agreements_completed_by_membership';
+            columns: ['couple_id', 'completed_by_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'couple_members';
+            referencedColumns: ['couple_id', 'user_id'];
+          },
+          {
+            foreignKeyName: 'agreements_couple_id_fkey';
+            columns: ['couple_id'];
+            isOneToOne: false;
+            referencedRelation: 'couples';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'agreements_response_request_couple';
+            columns: ['approved_response_id', 'source_request_id', 'couple_id'];
+            isOneToOne: false;
+            referencedRelation: 'responses';
+            referencedColumns: ['id', 'request_id', 'couple_id'];
+          },
+          {
+            foreignKeyName: 'agreements_source_proposal_request_couple';
+            columns: ['source_proposal_version_id', 'source_request_id', 'couple_id'];
+            isOneToOne: false;
+            referencedRelation: 'proposal_versions';
+            referencedColumns: ['id', 'request_id', 'couple_id'];
+          },
+          {
+            foreignKeyName: 'agreements_source_request_couple';
+            columns: ['source_request_id', 'couple_id'];
+            isOneToOne: false;
+            referencedRelation: 'requests';
+            referencedColumns: ['id', 'couple_id'];
+          },
+          {
+            foreignKeyName: 'agreements_superseded_by_fk';
+            columns: ['superseded_by'];
+            isOneToOne: false;
+            referencedRelation: 'agreements';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
       audit_logs: {
         Row: {
           action: string;
@@ -459,6 +553,10 @@ export type Database = {
     Functions: {
       approve_request: {
         Args: { expected_version: number; target_request_id: string };
+        Returns: string;
+      };
+      complete_agreement: {
+        Args: { expected_execution_status: string; target_agreement_id: string };
         Returns: string;
       };
       counter_proposal: {

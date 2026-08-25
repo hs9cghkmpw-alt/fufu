@@ -198,7 +198,7 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
     p_amount_type: 'one_time',
     p_details: 'v2の条件',
     p_scheduled_at: null,
-    p_due_at: null,
+    p_due_at: '2026-08-24T20:00:00+09:00',
     p_reason: '予算を抑えたい'
   });
   expect(v2Result).toEqual({ status: 200, data: expect.any(String) });
@@ -222,7 +222,7 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
     p_amount_type: 'one_time',
     p_details: 'v3の条件',
     p_scheduled_at: null,
-    p_due_at: null,
+    p_due_at: '2026-08-24T20:00:00+09:00',
     p_reason: '中間の金額を提案したい'
   });
   expect(v3Result).toEqual({ status: 200, data: expect.any(String) });
@@ -269,6 +269,46 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
     })
   ]);
   const responseId = (approvedResponse.data as { id: string }[])[0]!.id;
+  const agreementRows = await rest(
+    a.page,
+    `agreements?select=id,source_request_id,source_proposal_version_id,approved_response_id,execution_status,completed_at,completed_by_user_id&source_request_id=eq.${requestId}`
+  );
+  expect(agreementRows.data).toEqual([
+    expect.objectContaining({
+      source_request_id: requestId,
+      source_proposal_version_id: v3ProposalId,
+      approved_response_id: responseId,
+      execution_status: 'pending',
+      completed_at: null,
+      completed_by_user_id: null
+    })
+  ]);
+  const agreementId = (agreementRows.data as { id: string }[])[0]!.id;
+  await a.page.goto('/home');
+  const overdueSection = a.page.getByRole('region', { name: '未実行・期限超過' });
+  await expect(overdueSection.getByText('新しい掃除機の提案')).toBeVisible();
+  await expect(
+    a.page.getByRole('region', { name: '最近の合意' }).getByText('新しい掃除機の提案')
+  ).toBeVisible();
+
+  const concurrentCompletion = await Promise.all([
+    rest(a.page, 'rpc/complete_agreement', 'POST', {
+      target_agreement_id: agreementId,
+      expected_execution_status: 'pending'
+    }),
+    rest(b.page, 'rpc/complete_agreement', 'POST', {
+      target_agreement_id: agreementId,
+      expected_execution_status: 'pending'
+    })
+  ]);
+  expect(concurrentCompletion.map((result) => result.status).sort()).toEqual([200, 400]);
+  await a.page.goto(`/agreements/${agreementId}`);
+  await expect(a.page.getByText('実行済み').first()).toBeVisible();
+  await expect(a.page.getByRole('button', { name: '実行済みにする' })).toHaveCount(0);
+  await a.page.goto('/home');
+  await expect(
+    a.page.getByRole('region', { name: '未実行・期限超過' }).getByText('新しい掃除機の提案')
+  ).toHaveCount(0);
   expect(
     (await rest(b.page, `responses?id=eq.${responseId}`, 'PATCH', { reason: '改ざん' })).data
   ).toEqual([]);
@@ -278,7 +318,11 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
       .data
   ).toEqual([]);
   expect((await rest(a.page, `audit_logs?select=action&request_id=eq.${requestId}`)).data).toEqual(
-    expect.arrayContaining([expect.objectContaining({ action: 'request_approved' })])
+    expect.arrayContaining([
+      expect.objectContaining({ action: 'request_approved' }),
+      expect.objectContaining({ action: 'agreement_created' }),
+      expect.objectContaining({ action: 'agreement_completed' })
+    ])
   );
 
   await a.page.goto('/requests/new');
@@ -414,6 +458,9 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
   ).toEqual([]);
   expect((await rest(c.page, `audit_logs?select=id&request_id=eq.${requestId}`)).data).toEqual([]);
   expect((await rest(c.page, `responses?select=id&request_id=eq.${requestId}`)).data).toEqual([]);
+  expect(
+    (await rest(c.page, `agreements?select=id&source_request_id=eq.${requestId}`)).data
+  ).toEqual([]);
   expect(
     (
       await rest(c.page, 'rpc/approve_request', 'POST', {
