@@ -5,16 +5,27 @@ import {
   ResponseServiceError,
   scheduleDiscussion
 } from '../services/responseService';
+import { counterProposal, NegotiationServiceError } from '../services/negotiationService';
+import type { RequestCategory, RequestProposal } from '../types/request';
+import { NegotiationProposalForm } from './NegotiationProposalForm';
 
 interface Props {
   requestId: string;
   expectedVersion: number;
   onCompleted: (message: string) => Promise<void>;
+  category?: RequestCategory;
+  proposal?: RequestProposal;
 }
 
-type Mode = 'approve' | 'reject' | 'discussion' | null;
+type Mode = 'approve' | 'reject' | 'discussion' | 'counter' | null;
 
-export function ResponseActions({ requestId, expectedVersion, onCompleted }: Props) {
+export function ResponseActions({
+  requestId,
+  expectedVersion,
+  onCompleted,
+  category,
+  proposal
+}: Props) {
   const [mode, setMode] = useState<Mode>(null);
   const [reason, setReason] = useState('');
   const [discussionAt, setDiscussionAt] = useState('');
@@ -53,6 +64,11 @@ export function ResponseActions({ requestId, expectedVersion, onCompleted }: Pro
           <button className="secondary-button" type="button" onClick={() => setMode('reject')}>
             却下する
           </button>
+          {proposal && category && (
+            <button className="secondary-button" type="button" onClick={() => setMode('counter')}>
+              条件を変えて提案する
+            </button>
+          )}
           <button className="secondary-button" type="button" onClick={() => setMode('discussion')}>
             家で話す
           </button>
@@ -132,6 +148,34 @@ export function ResponseActions({ requestId, expectedVersion, onCompleted }: Pro
             戻る
           </button>
         </form>
+      )}
+      {mode === 'counter' && proposal && category && (
+        <div className="response-panel">
+          <h3>v{expectedVersion + 1}の提案</h3>
+          <NegotiationProposalForm
+            proposal={proposal}
+            category={category}
+            submitLabel="変更後の条件を相手に提案する"
+            onSubmit={async (input) => {
+              try {
+                await counterProposal(requestId, expectedVersion, input);
+                await onCompleted('新しい条件を相手に提案しました。');
+              } catch (actionError) {
+                const message =
+                  actionError instanceof Error
+                    ? actionError.message
+                    : '提案を保存できませんでした。';
+                setError(message);
+                if (actionError instanceof NegotiationServiceError && actionError.code === 'stale')
+                  await onCompleted(message);
+                throw actionError;
+              }
+            }}
+          />
+          <button className="text-button" type="button" onClick={() => setMode(null)}>
+            戻る
+          </button>
+        </div>
       )}
     </section>
   );

@@ -18,6 +18,7 @@ function mapProposal(row: {
   amount_type: string | null;
   scheduled_at: string | null;
   due_at: string | null;
+  counter_reason: string | null;
   created_at: string;
 }): RequestProposal {
   return {
@@ -31,6 +32,7 @@ function mapProposal(row: {
     amountType: row.amount_type as AmountType | null,
     scheduledAt: row.scheduled_at,
     dueAt: row.due_at,
+    counterReason: row.counter_reason,
     createdAt: row.created_at
   };
 }
@@ -63,18 +65,24 @@ export async function listRequests(): Promise<RequestSummary[]> {
   const { data: proposals, error: proposalError } = await supabase
     .from('proposal_versions')
     .select(
-      'id,request_id,version_no,author_user_id,title,details,amount,amount_type,scheduled_at,due_at,created_at'
+      'id,request_id,version_no,author_user_id,title,details,amount,amount_type,scheduled_at,due_at,counter_reason,created_at'
     )
     .in(
       'request_id',
       requests.map((request) => request.id)
     );
   if (proposalError) throw new Error('申請内容を取得できませんでした。');
-  const byRequest = new Map(
-    proposals.map((proposal) => [`${proposal.request_id}:${proposal.version_no}`, proposal])
-  );
+  const byRequest = new Map<string, typeof proposals>();
+  for (const proposal of proposals) {
+    const history = byRequest.get(proposal.request_id) ?? [];
+    history.push(proposal);
+    byRequest.set(proposal.request_id, history);
+  }
   return requests.flatMap((request) => {
-    const proposal = byRequest.get(`${request.id}:${request.current_proposal_version}`);
+    const history = (byRequest.get(request.id) ?? []).sort(
+      (left, right) => left.version_no - right.version_no
+    );
+    const proposal = history.find((item) => item.version_no === request.current_proposal_version);
     return proposal
       ? [
           {
@@ -85,7 +93,8 @@ export async function listRequests(): Promise<RequestSummary[]> {
             requesterUserId: request.requester_user_id,
             currentActorUserId: request.current_actor_user_id,
             discussionAt: request.discussion_at,
-            proposal: mapProposal(proposal)
+            proposal: mapProposal(proposal),
+            proposals: history.map(mapProposal)
           }
         ]
       : [];

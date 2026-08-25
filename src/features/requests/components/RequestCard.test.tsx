@@ -24,15 +24,18 @@ const base: RequestSummary = {
     amountType: null,
     scheduledAt: null,
     dueAt: null,
+    counterReason: null,
     createdAt: '2026-08-25T00:00:00Z'
-  }
+  },
+  proposals: []
 };
 
 describe('RequestCard', () => {
   it.each([
     ['approved', '合意済み'],
     ['rejected', '却下'],
-    ['discussion_scheduled', '話し合い予定']
+    ['discussion_scheduled', '話し合い予定'],
+    ['withdrawn', '取下げ']
   ])('shows %s status as %s', (status, label) => {
     render(
       <MemoryRouter>

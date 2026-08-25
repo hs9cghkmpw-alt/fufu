@@ -28,8 +28,10 @@ const request: RequestSummary = {
     amountType: 'one_time',
     scheduledAt: null,
     dueAt: null,
+    counterReason: null,
     createdAt: '2026-08-25T00:00:00Z'
-  }
+  },
+  proposals: []
 };
 
 describe('RequestsPage', () => {

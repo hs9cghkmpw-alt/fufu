@@ -30,8 +30,25 @@ const detailState = {
       amountType: 'monthly',
       scheduledAt: null,
       dueAt: null,
+      counterReason: null,
       createdAt: '2026-08-25T00:00:00Z'
-    }
+    },
+    proposals: [
+      {
+        id: 'proposal-1',
+        requestId: 'request-1',
+        versionNo: 1,
+        authorUserId: 'user-a',
+        title: '貯金額を決めたい',
+        details: '毎月相談したい',
+        amount: 10000,
+        amountType: 'monthly',
+        scheduledAt: null,
+        dueAt: null,
+        counterReason: null,
+        createdAt: '2026-08-25T00:00:00Z'
+      }
+    ]
   },
   refresh: vi.fn()
 };
@@ -51,8 +68,8 @@ describe('RequestDetailPage', () => {
     useRequestDetail.mockReturnValue(detailState);
     renderPage();
     expect(screen.getByRole('heading', { name: '貯金額を決めたい' })).toBeVisible();
-    expect(screen.getByText('10,000円/月')).toBeVisible();
-    expect(screen.getByText('v1')).toBeVisible();
+    expect(screen.getAllByText('10,000円/月')).toHaveLength(2);
+    expect(screen.getAllByText('v1')).toHaveLength(2);
     expect(screen.queryByRole('button', { name: /承認|却下|対案/ })).not.toBeInTheDocument();
   });
 
@@ -65,5 +82,6 @@ describe('RequestDetailPage', () => {
     expect(screen.getByRole('button', { name: '承認する' })).toBeVisible();
     expect(screen.getByRole('button', { name: '却下する' })).toBeVisible();
     expect(screen.getByRole('button', { name: '家で話す' })).toBeVisible();
+    expect(screen.getByRole('button', { name: '条件を変えて提案する' })).toBeVisible();
   });
 });

@@ -1,6 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
 import { ResponseActions } from '../components/ResponseActions';
+import { DiscussionResultForm } from '../components/DiscussionResultForm';
+import { ProposalHistory } from '../components/ProposalHistory';
+import { WithdrawAction } from '../components/WithdrawAction';
 import { useRequestDetail } from '../hooks/useRequestDetail';
 import { categoryLabels, requestStatusLabels } from '../lib/requestConstants';
 import { useState } from 'react';
@@ -56,12 +59,42 @@ export function RequestDetailPage() {
         <ResponseActions
           requestId={request.id}
           expectedVersion={request.currentProposalVersion}
+          category={request.category}
+          proposal={proposal}
           onCompleted={async (message) => {
             await refresh();
             setNotice(message);
           }}
         />
       )}
+      {request.status === 'discussion_scheduled' && (
+        <DiscussionResultForm
+          requestId={request.id}
+          expectedVersion={request.currentProposalVersion}
+          category={request.category}
+          proposal={proposal}
+          onCompleted={async (message) => {
+            await refresh();
+            setNotice(message);
+          }}
+        />
+      )}
+      {request.requesterUserId === user?.id &&
+        ['pending_response', 'negotiating'].includes(request.status) && (
+          <WithdrawAction
+            requestId={request.id}
+            expectedVersion={request.currentProposalVersion}
+            onCompleted={async (message) => {
+              await refresh();
+              setNotice(message);
+            }}
+          />
+        )}
+      <ProposalHistory
+        proposals={request.proposals}
+        currentVersion={request.currentProposalVersion}
+        currentUserId={user?.id}
+      />
     </article>
   );
 }

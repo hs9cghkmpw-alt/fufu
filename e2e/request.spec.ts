@@ -92,8 +92,8 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
   await expect(a.page).toHaveURL(/\/requests\/[0-9a-f-]+$/);
   const detailUrl = new URL(a.page.url()).pathname;
   await expect(a.page.getByRole('heading', { name: '新しい掃除機の提案' })).toBeVisible();
-  await expect(a.page.getByText('4,800円')).toBeVisible();
-  await expect(a.page.getByText('v1')).toBeVisible();
+  await expect(a.page.getByText('4,800円').first()).toBeVisible();
+  await expect(a.page.getByText('v1').first()).toBeVisible();
 
   const requestId = detailUrl.split('/').at(-1)!;
   const requestRows = await rest(
@@ -180,7 +180,7 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
   await b.page.goto('/requests');
   await expect(b.page.getByRole('heading', { name: 'あなたの対応が必要' })).toBeVisible();
   await b.page.getByText('新しい掃除機の提案').first().click();
-  await expect(b.page.getByText('二人で使う掃除機について相談したい')).toBeVisible();
+  await expect(b.page.getByText('二人で使う掃除機について相談したい').first()).toBeVisible();
   expect(
     (
       await rest(a.page, 'rpc/approve_request', 'POST', {
@@ -189,14 +189,47 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
       })
     ).status
   ).toBe(400);
+  const v2Result = await rest(b.page, 'rpc/counter_proposal', 'POST', {
+    target_request_id: requestId,
+    expected_version: 1,
+    p_title: '新しい掃除機の提案',
+    p_category: 'purchase',
+    p_amount: 2000,
+    p_amount_type: 'one_time',
+    p_details: 'v2の条件',
+    p_scheduled_at: null,
+    p_due_at: null,
+    p_reason: '予算を抑えたい'
+  });
+  expect(v2Result).toEqual({ status: 200, data: expect.any(String) });
   expect(
     (
       await rest(b.page, 'rpc/approve_request', 'POST', {
         target_request_id: requestId,
-        expected_version: 99
+        expected_version: 1
       })
     ).status
   ).toBe(400);
+
+  await a.page.goto(detailUrl);
+  await expect(a.page.getByText('v2').first()).toBeVisible();
+  const v3Result = await rest(a.page, 'rpc/counter_proposal', 'POST', {
+    target_request_id: requestId,
+    expected_version: 2,
+    p_title: '新しい掃除機の提案',
+    p_category: 'purchase',
+    p_amount: 3000,
+    p_amount_type: 'one_time',
+    p_details: 'v3の条件',
+    p_scheduled_at: null,
+    p_due_at: null,
+    p_reason: '中間の金額を提案したい'
+  });
+  expect(v3Result).toEqual({ status: 200, data: expect.any(String) });
+
+  await b.page.goto(detailUrl);
+  await expect(b.page.getByText('v3').first()).toBeVisible();
+  await expect(b.page.getByText('現在の提案')).toBeVisible();
   await b.page.getByRole('button', { name: '承認する' }).click();
   await b.page.getByRole('button', { name: '内容を確認して承認する' }).click();
   await expect(b.page.getByText('申請を承認しました。')).toBeVisible();
@@ -204,6 +237,26 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
   await a.page.goto(detailUrl);
   await expect(a.page.getByText('合意済み').first()).toBeVisible();
   await expect(a.page.getByRole('button', { name: '承認する' })).toHaveCount(0);
+  const negotiationProposals = await rest(
+    a.page,
+    `proposal_versions?select=id,version_no,author_user_id,counter_reason&request_id=eq.${requestId}&order=version_no.asc`
+  );
+  expect(negotiationProposals.data).toEqual([
+    expect.objectContaining({ version_no: 1, author_user_id: a.userId, counter_reason: null }),
+    expect.objectContaining({
+      version_no: 2,
+      author_user_id: b.userId,
+      counter_reason: '予算を抑えたい'
+    }),
+    expect.objectContaining({
+      version_no: 3,
+      author_user_id: a.userId,
+      counter_reason: '中間の金額を提案したい'
+    })
+  ]);
+  const v3ProposalId = (negotiationProposals.data as { id: string; version_no: number }[]).find(
+    (proposal) => proposal.version_no === 3
+  )!.id;
   const approvedResponse = await rest(
     a.page,
     `responses?select=id,response_type,proposal_version_id,responder_user_id&request_id=eq.${requestId}`
@@ -211,7 +264,7 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
   expect(approvedResponse.data).toEqual([
     expect.objectContaining({
       response_type: 'approved',
-      proposal_version_id: proposalId,
+      proposal_version_id: v3ProposalId,
       responder_user_id: b.userId
     })
   ]);
@@ -220,6 +273,10 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
     (await rest(b.page, `responses?id=eq.${responseId}`, 'PATCH', { reason: '改ざん' })).data
   ).toEqual([]);
   expect((await rest(b.page, `responses?id=eq.${responseId}`, 'DELETE')).data).toEqual([]);
+  expect(
+    (await rest(a.page, `proposal_versions?select=id&request_id=eq.${requestId}&version_no=eq.4`))
+      .data
+  ).toEqual([]);
   expect((await rest(a.page, `audit_logs?select=action&request_id=eq.${requestId}`)).data).toEqual(
     expect.arrayContaining([expect.objectContaining({ action: 'request_approved' })])
   );
@@ -268,6 +325,29 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
   await b.page.goto(discussionUrl);
   await expect(b.page.getByText('話し合い予定').first()).toBeVisible();
   await expect(b.page.getByText(/2026\/08\/26 20:00/)).toBeVisible();
+  await b.page.getByRole('button', { name: '話し合った結果を登録する' }).click();
+  await b.page.getByLabel('変更理由').fill('話し合った結果');
+  await b.page.getByLabel('内容・理由（任意）').fill('二人で話した条件');
+  await b.page.getByRole('button', { name: 'v2として相手に提案する' }).click();
+  await expect(b.page.getByText('話し合い結果を新しい提案として登録しました。')).toBeVisible();
+  expect(
+    (
+      await rest(
+        b.page,
+        `requests?select=status,current_actor_user_id,current_proposal_version&id=eq.${discussionId}`
+      )
+    ).data
+  ).toEqual([
+    { status: 'negotiating', current_actor_user_id: a.userId, current_proposal_version: 2 }
+  ]);
+
+  await a.page.goto('/requests/new');
+  await a.page.getByLabel('タイトル').fill('取下げシナリオ');
+  await a.page.getByRole('button', { name: '相手に申請を送る' }).click();
+  await a.page.getByRole('button', { name: '申請を取り下げる' }).click();
+  await a.page.getByRole('button', { name: '取下げを確定する' }).click();
+  await expect(a.page.getByText('申請を取り下げました。')).toBeVisible();
+  await expect(a.page.getByText('取下げ').first()).toBeVisible();
 
   await a.page.goto('/requests/new');
   await a.page.getByLabel('タイトル').fill('同時回答シナリオ');
@@ -289,6 +369,32 @@ test('A creates requests, B responds, and another couple cannot read them', asyn
   expect(
     (await rest(a.page, `responses?select=id&request_id=eq.${concurrentId}`)).data
   ).toHaveLength(1);
+
+  await a.page.goto('/requests/new');
+  await a.page.getByLabel('タイトル').fill('同時対案シナリオ');
+  await a.page.getByRole('button', { name: '相手に申請を送る' }).click();
+  await expect(a.page).toHaveURL(/\/requests\/[0-9a-f-]+$/);
+  const concurrentCounterId = new URL(a.page.url()).pathname.split('/').at(-1)!;
+  const counterBody = {
+    target_request_id: concurrentCounterId,
+    expected_version: 1,
+    p_title: '同時対案',
+    p_category: 'other',
+    p_amount: null,
+    p_amount_type: null,
+    p_details: null,
+    p_scheduled_at: null,
+    p_due_at: null,
+    p_reason: '同時実行テスト'
+  };
+  const concurrentCounters = await Promise.all([
+    rest(b.page, 'rpc/counter_proposal', 'POST', counterBody),
+    rest(b.page, 'rpc/counter_proposal', 'POST', counterBody)
+  ]);
+  expect(concurrentCounters.map((result) => result.status).sort()).toEqual([200, 400]);
+  expect(
+    (await rest(a.page, `proposal_versions?select=id&request_id=eq.${concurrentCounterId}`)).data
+  ).toHaveLength(2);
 
   const c = await signup(browser, 'c');
   await createAndInvite(c.page);

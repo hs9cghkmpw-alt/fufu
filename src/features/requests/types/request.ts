@@ -23,6 +23,7 @@ export interface RequestProposal {
   amountType: AmountType | null;
   scheduledAt: string | null;
   dueAt: string | null;
+  counterReason: string | null;
   createdAt: string;
 }
 
@@ -36,6 +37,7 @@ export interface RequestSummary {
   discussionAt: string | null;
   createdAt: string;
   proposal: RequestProposal;
+  proposals: RequestProposal[];
 }
 
 export interface CreateRequestInput {
@@ -46,4 +48,8 @@ export interface CreateRequestInput {
   details: string | null;
   scheduledAt: string | null;
   dueAt: string | null;
+}
+
+export interface NegotiationProposalInput extends CreateRequestInput {
+  reason: string;
 }

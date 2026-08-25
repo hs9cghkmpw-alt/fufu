@@ -461,6 +461,21 @@ export type Database = {
         Args: { expected_version: number; target_request_id: string };
         Returns: string;
       };
+      counter_proposal: {
+        Args: {
+          expected_version: number;
+          p_amount: number;
+          p_amount_type: string;
+          p_category: string;
+          p_details: string;
+          p_due_at: string;
+          p_reason: string;
+          p_scheduled_at: string;
+          p_title: string;
+          target_request_id: string;
+        };
+        Returns: string;
+      };
       create_couple: { Args: never; Returns: string };
       create_couple_invitation: {
         Args: { target_couple_id: string; valid_for?: string };
@@ -509,6 +524,21 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      record_discussion_result: {
+        Args: {
+          expected_version: number;
+          p_amount: number;
+          p_amount_type: string;
+          p_category: string;
+          p_details: string;
+          p_due_at: string;
+          p_reason: string;
+          p_scheduled_at: string;
+          p_title: string;
+          target_request_id: string;
+        };
+        Returns: string;
+      };
       reject_request: {
         Args: {
           expected_version: number;
@@ -527,6 +557,21 @@ export type Database = {
           scheduled_for: string;
           target_request_id: string;
         };
+        Returns: string;
+      };
+      validate_negotiation_proposal_input: {
+        Args: {
+          p_amount: number;
+          p_amount_type: string;
+          p_category: string;
+          p_details: string;
+          p_reason: string;
+          p_title: string;
+        };
+        Returns: undefined;
+      };
+      withdraw_request: {
+        Args: { expected_version: number; target_request_id: string };
         Returns: string;
       };
     };
