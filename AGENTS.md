@@ -30,3 +30,11 @@
 - force pushは禁止する。
 - Git競合を勝手に解決しない。作業を停止し、競合箇所と必要な判断を報告する。
 - 無関係な既存変更を編集、破棄、commitしない。
+
+## Context / Token Safety — mandatory
+
+- 全Agentは作業中、残りcontext/token余力と残作業量を継続的に確認または保守的に推定する。正確な残量を取得できない場合でも免除されない。
+- context切れ・出力打切り・作業途中の情報喪失が起きそうな状態まで作業を続けてはいけない。危険域に入る前に安全なcheckpointを作り、変更をfeature branchへ保存できる範囲で保存し、Issue/PRまたは適切なSource of Truthへ `AI-HANDOFF` を残して交代する。
+- `AI-HANDOFF` には必ず、目的、完了済み、未完了、branch/commit/PR/Issue、変更ファイル、tests/CI結果、blocker、次の具体的1〜3手、安全境界・触ってはいけない箇所、推測・未検証事項を含める。
+- HANDOFF後に新しい大規模変更を始めない。次Agentは最新HANDOFFを最初に読み、重複作業をせず続きから再開する。
+- トークンを限界まで使うことより、早めで完全な申し送りを優先する。
