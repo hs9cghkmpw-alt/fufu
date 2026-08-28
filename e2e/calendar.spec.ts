@@ -24,12 +24,7 @@ async function signup(browser: Browser, name: string): Promise<SessionPage> {
   return { context, page };
 }
 
-async function rest(
-  page: Page,
-  path: string,
-  method = 'GET',
-  body?: Record<string, unknown>
-) {
+async function rest(page: Page, path: string, method = 'GET', body?: Record<string, unknown>) {
   return page.evaluate(
     async ({ url, key, path, method, body }) => {
       const storageKey = Object.keys(localStorage).find(
@@ -122,8 +117,9 @@ test('calendar isolates personal events and projects shared/formal state', async
   ).toBe(200);
   expect(
     (
-      (await rest(a.page, `calendar_events?select=status&id=eq.${sharedId}`))
-        .data as { status: string }[]
+      (await rest(a.page, `calendar_events?select=status&id=eq.${sharedId}`)).data as {
+        status: string;
+      }[]
     )[0]?.status
   ).toBe('confirmed');
 
@@ -151,8 +147,9 @@ test('calendar isolates personal events and projects shared/formal state', async
   ).toBe(200);
   expect(
     (
-      (await rest(a.page, `calendar_events?select=status&id=eq.${pending?.id}`))
-        .data as { status: string }[]
+      (await rest(a.page, `calendar_events?select=status&id=eq.${pending?.id}`)).data as {
+        status: string;
+      }[]
     )[0]?.status
   ).toBe('cancelled');
   const agreementProjection = await rest(

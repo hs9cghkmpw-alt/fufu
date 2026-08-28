@@ -8,10 +8,7 @@ function dayNumber(dateKey: string) {
 }
 
 function isInMonth(dateKey: string, month: CalendarMonth) {
-  return (
-    Number(dateKey.slice(0, 4)) === month.year &&
-    Number(dateKey.slice(5, 7)) === month.month
-  );
+  return Number(dateKey.slice(0, 4)) === month.year && Number(dateKey.slice(5, 7)) === month.month;
 }
 
 function shortEventLabel(event: CalendarEvent) {

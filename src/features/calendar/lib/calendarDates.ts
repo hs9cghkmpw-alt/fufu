@@ -1,7 +1,4 @@
-import {
-  formatTokyoDateTime,
-  toTokyoDateKey
-} from '../../../shared/lib/dates/tokyo';
+import { formatTokyoDateTime, toTokyoDateKey } from '../../../shared/lib/dates/tokyo';
 import type { CalendarEvent, CalendarRange } from '../types/calendar';
 
 export interface CalendarMonth {
@@ -51,9 +48,7 @@ export function formatCalendarMonth(month: CalendarMonth) {
 }
 
 function firstOfMonthKey(month: CalendarMonth) {
-  return `${month.year.toString().padStart(4, '0')}-${month.month
-    .toString()
-    .padStart(2, '0')}-01`;
+  return `${month.year.toString().padStart(4, '0')}-${month.month.toString().padStart(2, '0')}-01`;
 }
 
 export function monthGridDateKeys(month: CalendarMonth) {

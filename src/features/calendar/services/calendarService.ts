@@ -4,11 +4,7 @@ import type {
   CalendarRangeRpcArgs
 } from '../../../shared/lib/supabase/calendar.database.types';
 import { getSupabaseClient } from '../../../shared/lib/supabase/client';
-import type {
-  CalendarEvent,
-  CalendarEventInput,
-  CalendarRange
-} from '../types/calendar';
+import type { CalendarEvent, CalendarEventInput, CalendarRange } from '../types/calendar';
 
 interface RpcError {
   message: string;

@@ -10,18 +10,10 @@ export const calendarEventTypes = [
 export type CalendarEventType = (typeof calendarEventTypes)[number];
 
 export type CalendarEventStatus =
-  | 'pending'
-  | 'confirmed'
-  | 'discussion'
-  | 'completed'
-  | 'cancelled';
+  'pending' | 'confirmed' | 'discussion' | 'completed' | 'cancelled';
 
 export type CalendarApprovalStatus =
-  | 'not_required'
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'withdrawn';
+  'not_required' | 'pending' | 'approved' | 'rejected' | 'withdrawn';
 
 export type CalendarVisibility = 'couple' | 'personal';
 

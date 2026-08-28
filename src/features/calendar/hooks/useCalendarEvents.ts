@@ -14,7 +14,9 @@ export function useCalendarEvents(range: CalendarRange) {
       setEvents(await listCalendarEvents(range));
     } catch (loadError) {
       setEvents([]);
-      setError(loadError instanceof Error ? loadError.message : 'カレンダーを取得できませんでした。');
+      setError(
+        loadError instanceof Error ? loadError.message : 'カレンダーを取得できませんでした。'
+      );
     } finally {
       setIsLoading(false);
     }
