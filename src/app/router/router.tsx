@@ -7,6 +7,8 @@ import { UpdatePasswordPage } from '../../features/auth/pages/UpdatePasswordPage
 import { ProtectedRoute } from '../../features/auth/components/ProtectedRoute';
 import { PublicOnlyRoute } from '../../features/auth/components/PublicOnlyRoute';
 import { CalendarPage } from '../../features/calendar/pages/CalendarPage';
+import { CalendarEventDetailPage } from '../../features/calendar/pages/CalendarEventDetailPage';
+import { NewCalendarEventPage } from '../../features/calendar/pages/NewCalendarEventPage';
 import { HistoryPage } from '../../features/history/pages/HistoryPage';
 import { HomePage } from '../../features/home/pages/HomePage';
 import { SetupPage } from '../../features/pairing/pages/SetupPage';
@@ -47,6 +49,8 @@ export const router = createBrowserRouter([
               { path: '/agreements', element: <AgreementsPage /> },
               { path: '/agreements/:id', element: <AgreementDetailPage /> },
               { path: '/calendar', element: <CalendarPage /> },
+              { path: '/calendar/new', element: <NewCalendarEventPage /> },
+              { path: '/calendar/:id', element: <CalendarEventDetailPage /> },
               { path: '/history', element: <HistoryPage /> }
             ]
           }
