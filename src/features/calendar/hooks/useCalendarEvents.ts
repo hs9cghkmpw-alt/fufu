@@ -18,10 +18,11 @@ export function useCalendarEvents(range: CalendarRange) {
     } finally {
       setIsLoading(false);
     }
-  }, [range.dateEnd, range.dateStart, range.rangeEnd, range.rangeStart]);
+  }, [range]);
 
   useEffect(() => {
-    void refresh();
+    const timer = window.setTimeout(() => void refresh(), 0);
+    return () => window.clearTimeout(timer);
   }, [refresh]);
 
   return { events, isLoading, error, refresh };

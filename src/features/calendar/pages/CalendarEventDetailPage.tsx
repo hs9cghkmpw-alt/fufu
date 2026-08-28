@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/context/AuthContext';
-import { calendarEventLabel } from '../components/CalendarEventCard';
 import { formatCalendarEventWhen } from '../lib/calendarDates';
+import { calendarEventLabel } from '../lib/calendarEventPresentation';
 import {
   approveSharedCalendarEvent,
   cancelPersonalCalendarEvent,
@@ -40,7 +40,8 @@ export function CalendarEventDetailPage() {
   }, [id]);
 
   useEffect(() => {
-    void load();
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
   }, [load]);
 
   const runAction = async (action: () => Promise<void>, leaveAfter = false) => {
