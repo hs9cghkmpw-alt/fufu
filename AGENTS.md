@@ -23,6 +23,24 @@
 - 業務tableは原則RLSを有効にし、重要操作とaudit logを同一transactionにする。
 - 通常ユーザーにaudit logのUPDATE/DELETEを許可しない。
 
+## Context / Token Safety
+
+全AIは残りcontext/token余力と残作業量を継続確認または保守的に推定し、限界・打切り・状態喪失の危険域まで続行しない。危険域前に安全なcheckpointを作り、可能なら正しいfeature branchへ保存し、Issue/PR等へ `AI-HANDOFF` を残して停止する。HANDOFF後に新しい大規模作業を開始しない。
+
+`AI-HANDOFF` 必須項目:
+1. 目的
+2. 完了済み
+3. 未完了
+4. branch / commit / PR / Issue
+5. 変更ファイル
+6. tests / CI / 実機結果
+7. 失敗 / blocker
+8. 次の具体的1〜3手
+9. 安全境界 / 触ってはいけない箇所
+10. 推測 / 未検証事項
+
+次担当は最新HANDOFFを最初に読み、重複作業を避ける。古いHANDOFFより新しいGitHub evidenceを優先する。
+
 ## Git and verification
 
 - 作業開始前に対象branchを確認し、`git pull --ff-only` で最新化する。
