@@ -1,0 +1,44 @@
+name: AI Workers
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+  id-token: write
+jobs:
+  claude:
+    if: github.event.issue.pull_request == null && startsWith(github.event.comment.body, '/ai claude') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          trigger_phrase: /ai claude
+          branch_prefix: claude/
+          additional_permissions: |
+            actions: read
+          claude_args: |
+            --max-turns 40
+            --append-system-prompt "Managed AI worker: read the full Issue, AGENTS.md/CLAUDE.md, Source of Truth and newest AI-HANDOFF first. Follow scope exactly. Never commit to default branch; use a focused feature branch/PR. Run relevant tests. Never merge, approve, close Issues, expose secrets, weaken tests, or call unexecuted verification PASS. Leave complete AI-HANDOFF before stopping."
+  codex:
+    if: github.event.issue.pull_request == null && startsWith(github.event.comment.body, '/ai codex') && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - uses: openai/codex-action@v1
+        with:
+          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+          permission-profile: :workspace
+          output-file: codex-final.md
+          prompt: |
+            Independently review Issue #${{ github.event.issue.number }} in ${{ github.repository }}. Read Issue/comments, repository instructions, SoT, newest AI-HANDOFF, exact change evidence and tests. Classify Critical/Major/Minor/Suggestion. Critical/Major means FAIL. Never merge/approve/close, weaken tests, expose secrets, or infer unexecuted checks as PASS. State reviewed SHA/ref, unverified items, verdict and next owner.
+      - env: {GH_TOKEN: "${{ github.token }}"}
+        run: gh issue comment "${{ github.event.issue.number }}" --body-file codex-final.md
